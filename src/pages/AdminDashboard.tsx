@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { GraduationCap, Clock, FileText, User, BookOpen, Save, LogOut, CheckCircle } from 'lucide-react';
+import { GraduationCap, Clock, FileText, User, BookOpen, Save, LogOut, CheckCircle, HelpCircle, Plus, Minus, Image, X, Upload } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import QuizEditor from '../components/QuizEditor';
 import QuizPreview from '../components/QuizPreview';
@@ -25,6 +25,8 @@ interface QuizData {
   pdfFile?: File;
   createdAt: string;
   correctAnswers?: {[key: string]: string};
+  explanations?: {[key: string]: string}; // New field for explanations
+  explanationImages?: {[key: string]: string[]}; // New field for explanation images (base64)
 }
 
 interface AdminDashboardProps {
@@ -34,6 +36,8 @@ interface AdminDashboardProps {
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [quizContent, setQuizContent] = useState('');
   const [correctAnswers, setCorrectAnswers] = useState<{[key: string]: string}>({});
+  const [explanations, setExplanations] = useState<{[key: string]: string}>({});
+  const [explanationImages, setExplanationImages] = useState<{[key: string]: string[]}>({});
   const [selectedPDF, setSelectedPDF] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     studentId: '',
@@ -42,6 +46,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   });
   const [activeTab, setActiveTab] = useState('text-quiz');
   const [activeMainTab, setActiveMainTab] = useState('create-quiz');
+  const fileInputRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
   const { toast } = useToast();
 
   const handleSaveQuiz = () => {
@@ -77,6 +82,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       return;
     }
 
+    // Sanitize explanations
+    const sanitizedExplanations: {[key: string]: string} = {};
+    Object.entries(explanations).forEach(([key, value]) => {
+      sanitizedExplanations[key] = sanitizeHTML(value);
+    });
+
     const quizData: QuizData = {
       studentId: sanitizedStudentId,
       subject: sanitizedSubject,
@@ -85,7 +96,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       type: activeTab === 'text-quiz' ? 'text' : 'pdf',
       pdfFile: activeTab === 'pdf-quiz' ? selectedPDF : undefined,
       createdAt: new Date().toISOString(),
-      correctAnswers: Object.keys(correctAnswers).length > 0 ? correctAnswers : undefined
+      correctAnswers: Object.keys(correctAnswers).length > 0 ? correctAnswers : undefined,
+      explanations: Object.keys(sanitizedExplanations).length > 0 ? sanitizedExplanations : undefined,
+      explanationImages: Object.keys(explanationImages).length > 0 ? explanationImages : undefined
     };
 
     // Save to localStorage (simulating backend storage)
@@ -101,6 +114,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       subject: sanitizedSubject,
       content: sanitizedContent,
       correctAnswers: correctAnswers,
+      explanations: sanitizedExplanations,
+      explanationImages: explanationImages,
       createdAt: new Date().toISOString(),
       teacherEmail: 'debashrestha222@gmail.com'
     };
@@ -109,13 +124,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
     toast({
       title: "Quiz Saved Successfully",
-      description: `${activeTab === 'text-quiz' ? 'Text quiz' : 'PDF exam'} assigned to student ${sanitizedStudentId}`,
+      description: `${activeTab === 'text-quiz' ? 'Text quiz' : 'PDF exam'} with detailed explanations assigned to student ${sanitizedStudentId}`,
     });
 
     // Reset form
     setFormData({ studentId: '', subject: '', timer: 30 });
     setQuizContent('');
     setCorrectAnswers({});
+    setExplanations({});
+    setExplanationImages({});
     setSelectedPDF(null);
   };
 
@@ -131,22 +148,120 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     }));
   };
 
-  const addCorrectAnswerField = () => {
-    const questionCount = Object.keys(correctAnswers).length + 1;
+  const handleExplanationChange = (questionId: string, explanation: string) => {
+    setExplanations(prev => ({
+      ...prev,
+      [questionId]: explanation
+    }));
+  };
+
+  // Handle image paste functionality
+  const handleImagePaste = (questionId: string, event: React.ClipboardEvent) => {
+    const items = Array.from(event.clipboardData.items);
+    const imageItem = items.find(item => item.type.startsWith('image/'));
+    
+    if (imageItem) {
+      event.preventDefault();
+      const file = imageItem.getAsFile();
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const base64String = e.target?.result as string;
+          setExplanationImages(prev => ({
+            ...prev,
+            [questionId]: [...(prev[questionId] || []), base64String]
+          }));
+          toast({
+            title: "Image Added!",
+            description: "Screenshot pasted successfully to explanation",
+          });
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  };
+
+  // Handle file upload for images
+  const handleImageUpload = (questionId: string, event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64String = e.target?.result as string;
+        setExplanationImages(prev => ({
+          ...prev,
+          [questionId]: [...(prev[questionId] || []), base64String]
+        }));
+        toast({
+          title: "Image Uploaded!",
+          description: "Image added to explanation successfully",
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Remove image from explanation
+  const removeExplanationImage = (questionId: string, imageIndex: number) => {
+    setExplanationImages(prev => ({
+      ...prev,
+      [questionId]: prev[questionId]?.filter((_, index) => index !== imageIndex) || []
+    }));
+  };
+
+  const addQuestionFields = () => {
+    const questionCount = Math.max(
+      Object.keys(correctAnswers).length,
+      Object.keys(explanations).length
+    ) + 1;
     const questionId = `q${questionCount}`;
+    
     setCorrectAnswers(prev => ({
       ...prev,
       [questionId]: ''
     }));
+    
+    setExplanations(prev => ({
+      ...prev,
+      [questionId]: ''
+    }));
+    
+    setExplanationImages(prev => ({
+      ...prev,
+      [questionId]: []
+    }));
   };
 
-  const removeCorrectAnswerField = (questionId: string) => {
+  const removeQuestionFields = (questionId: string) => {
     setCorrectAnswers(prev => {
       const newAnswers = {...prev};
       delete newAnswers[questionId];
       return newAnswers;
     });
+    
+    setExplanations(prev => {
+      const newExplanations = {...prev};
+      delete newExplanations[questionId];
+      return newExplanations;
+    });
+    
+    setExplanationImages(prev => {
+      const newImages = {...prev};
+      delete newImages[questionId];
+      return newImages;
+    });
   };
+
+  // Get all question IDs (union of answers, explanations, and images)
+  const allQuestionIds = Array.from(new Set([
+    ...Object.keys(correctAnswers),
+    ...Object.keys(explanations),
+    ...Object.keys(explanationImages)
+  ])).sort((a, b) => {
+    const numA = parseInt(a.replace('q', ''));
+    const numB = parseInt(b.replace('q', ''));
+    return numA - numB;
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
@@ -157,7 +272,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
               <GraduationCap className="h-8 w-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Teacher Dashboard</h1>
-            <p className="text-gray-600">Create and assign quizzes and PDF exams to students</p>
+            <p className="text-gray-600">Create quizzes with detailed explanations for each question</p>
           </div>
           <Button
             onClick={onLogout}
@@ -188,7 +303,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                       Quiz Assignment
                     </CardTitle>
                     <CardDescription>
-                      Assign quiz or PDF exam to a specific student
+                      Assign quiz with detailed explanations to a specific student
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -237,49 +352,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                       </Select>
                     </div>
 
-                    {/* Correct Answers Section */}
-                    <div className="space-y-2">
-                      <Label className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4" />
-                        Correct Answers
-                      </Label>
-                      <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                        <div className="space-y-3">
-                          {Object.entries(correctAnswers).map(([questionId, answer]) => (
-                            <div key={questionId} className="flex gap-2 items-center">
-                              <Label className="text-sm font-medium min-w-[60px]">
-                                Q{questionId.replace('q', '')}:
-                              </Label>
-                              <Input
-                                placeholder="Enter correct answer"
-                                value={answer}
-                                onChange={(e) => handleCorrectAnswerChange(questionId, e.target.value)}
-                                className="flex-1"
-                              />
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => removeCorrectAnswerField(questionId)}
-                                className="px-2"
-                              >
-                                ×
-                              </Button>
-                            </div>
-                          ))}
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={addCorrectAnswerField}
-                            className="w-full"
-                          >
-                            + Add Question Answer
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-
                     <Button onClick={handleSaveQuiz} className="w-full" size="lg">
                       <Save className="h-4 w-4 mr-2" />
                       Save & Assign Quiz
@@ -318,6 +390,152 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                       
                       <QuizPreview content={quizContent} />
                     </div>
+
+                    {/* Answer Keys & Explanations Section */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <CheckCircle className="h-5 w-5" />
+                          Answer Keys & Detailed Explanations
+                        </CardTitle>
+                        <CardDescription>
+                          Provide correct answers and detailed explanations for each question. Students will see these after submitting their quiz.
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg border">
+                          <div className="space-y-6">
+                            {allQuestionIds.map((questionId) => (
+                              <div key={questionId} className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                                <div className="flex items-center justify-between mb-4">
+                                  <Label className="text-lg font-semibold text-gray-700">
+                                    Question {questionId.replace('q', '')}
+                                  </Label>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => removeQuestionFields(questionId)}
+                                    className="text-red-600 hover:text-red-700"
+                                  >
+                                    <Minus className="h-4 w-4" />
+                                    Remove
+                                  </Button>
+                                </div>
+                                
+                                <div className="grid md:grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                    <Label className="flex items-center gap-2 text-sm font-medium">
+                                      <CheckCircle className="h-4 w-4 text-green-600" />
+                                      Correct Answer
+                                    </Label>
+                                    <Input
+                                      placeholder="Enter the correct answer"
+                                      value={correctAnswers[questionId] || ''}
+                                      onChange={(e) => handleCorrectAnswerChange(questionId, e.target.value)}
+                                      className="border-green-200 focus:border-green-500"
+                                    />
+                                  </div>
+                                  
+                                  <div className="space-y-2">
+                                    <Label className="flex items-center gap-2 text-sm font-medium">
+                                      <HelpCircle className="h-4 w-4 text-blue-600" />
+                                      Detailed Explanation
+                                    </Label>
+                                    <Textarea
+                                      placeholder="Explain why this is the correct answer, show working steps, provide additional context... 
+
+📸 Tip: Press Ctrl+V to paste screenshots directly!"
+                                      value={explanations[questionId] || ''}
+                                      onChange={(e) => handleExplanationChange(questionId, e.target.value)}
+                                      onPaste={(e) => handleImagePaste(questionId, e)}
+                                      className="min-h-[100px] border-blue-200 focus:border-blue-500 resize-none"
+                                      rows={4}
+                                    />
+                                    
+                                    {/* Image upload section */}
+                                    <div className="space-y-3">
+                                      <div className="flex items-center gap-2">
+                                        <input
+                                          type="file"
+                                          accept="image/*"
+                                          onChange={(e) => handleImageUpload(questionId, e)}
+                                          ref={(el) => fileInputRefs.current[questionId] = el}
+                                          className="hidden"
+                                        />
+                                        <Button
+                                          type="button"
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => fileInputRefs.current[questionId]?.click()}
+                                          className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                                        >
+                                          <Upload className="h-4 w-4 mr-2" />
+                                          Upload Image
+                                        </Button>
+                                        <span className="text-xs text-gray-500">or paste with Ctrl+V</span>
+                                      </div>
+                                      
+                                      {/* Display uploaded images */}
+                                      {explanationImages[questionId] && explanationImages[questionId].length > 0 && (
+                                        <div className="grid grid-cols-2 gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                          {explanationImages[questionId].map((image, index) => (
+                                            <div key={index} className="relative group">
+                                              <img
+                                                src={image}
+                                                alt={`Explanation image ${index + 1}`}
+                                                className="w-full h-24 object-cover rounded border"
+                                              />
+                                              <Button
+                                                type="button"
+                                                variant="destructive"
+                                                size="sm"
+                                                onClick={() => removeExplanationImage(questionId, index)}
+                                                className="absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                              >
+                                                <X className="h-3 w-3" />
+                                              </Button>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                            
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={addQuestionFields}
+                              className="w-full border-dashed border-2 h-12 text-gray-600 hover:text-gray-800"
+                            >
+                              <Plus className="h-5 w-5 mr-2" />
+                              Add Question Answer & Explanation
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                          <div className="flex items-start gap-3">
+                            <HelpCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                            <div>
+                              <h4 className="font-medium text-yellow-800 mb-2">💡 Tips for Great Explanations:</h4>
+                              <ul className="text-sm text-yellow-700 space-y-1">
+                                <li>• Show step-by-step working for math problems</li>
+                                <li>• Explain the reasoning behind the correct answer</li>
+                                <li>• Point out common mistakes students might make</li>
+                                <li>• Include relevant formulas or concepts</li>
+                                <li>• Use examples to clarify difficult concepts</li>
+                                <li>• 📸 <strong>Paste screenshots with Ctrl+V</strong> for diagrams and visual explanations</li>
+                                <li>• Upload images for step-by-step solutions or drawings</li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </TabsContent>
                   
                   <TabsContent value="pdf-quiz">

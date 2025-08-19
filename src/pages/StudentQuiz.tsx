@@ -1,11 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Clock, CheckCircle, AlertCircle, Mail, Trophy, XCircle } from 'lucide-react';
+import { Clock, CheckCircle, AlertCircle, Mail, Trophy, XCircle, Image as ImageIcon, Send, Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import emailjs from '@emailjs/browser';
+
+// EmailJS Configuration - Replace with your actual keys
+const EMAILJS_CONFIG = {
+  serviceId: 'service_ua9cus6', // Replace with your Gmail service ID
+  templateId: 'Quiz_Result', // Replace with your template ID  
+  publicKey: '-dUYWXelBAJqpFAGc' // Replace with your public key
+};
+
+// Initialize EmailJS
+emailjs.init(EMAILJS_CONFIG.publicKey);
 
 interface Quiz {
   id: string;
@@ -16,6 +27,8 @@ interface Quiz {
   createdAt: string;
   status: 'assigned' | 'completed';
   correctAnswers?: {[key: string]: string};
+  explanations?: {[key: string]: string}; // Add explanations field
+  explanationImages?: {[key: string]: string[]}; // Add explanation images field
 }
 
 interface StudentQuizProps {
@@ -37,6 +50,16 @@ interface QuizResult {
   gradingDetails?: {[key: string]: boolean};
 }
 
+interface QuizState {
+  timeLeft: number;
+  quizStarted: boolean;
+  quizCompleted: boolean;
+  showResults: boolean;
+  startTime: string | null;
+  answers: {[key: string]: string};
+  comments: {[key: string]: string};
+}
+
 const StudentQuiz: React.FC<StudentQuizProps> = ({ studentId, onLogout }) => {
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
@@ -48,11 +71,113 @@ const StudentQuiz: React.FC<StudentQuizProps> = ({ studentId, onLogout }) => {
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [answers, setAnswers] = useState<{[key: string]: string}>({});
   const [comments, setComments] = useState<{[key: string]: string}>({});
+  const [isEmailSending, setIsEmailSending] = useState(false);
   const { toast } = useToast();
+
+  // Generate a unique key for this quiz session
+  const getQuizStateKey = (studentId: string, quizId?: string) => {
+    return `quizState_${studentId}_${quizId || 'current'}`;
+  };
+
+  // Save quiz state to localStorage
+  const saveQuizState = useCallback(() => {
+    if (!quiz) return;
+    
+    const state: QuizState = {
+      timeLeft,
+      quizStarted,
+      quizCompleted,
+      showResults,
+      startTime: startTime?.toISOString() || null,
+      answers,
+      comments
+    };
+    
+    const stateKey = getQuizStateKey(studentId, quiz.id);
+    localStorage.setItem(stateKey, JSON.stringify(state));
+    console.log('Quiz state saved:', stateKey);
+  }, [quiz, timeLeft, quizStarted, quizCompleted, showResults, startTime, answers, comments, studentId]);
+
+  // Load quiz state from localStorage
+  const loadQuizState = useCallback(() => {
+    if (!quiz) return;
+    
+    const stateKey = getQuizStateKey(studentId, quiz.id);
+    const savedState = localStorage.getItem(stateKey);
+    
+    if (savedState) {
+      try {
+        const state: QuizState = JSON.parse(savedState);
+        console.log('Loading quiz state:', state);
+        
+        setTimeLeft(state.timeLeft);
+        setQuizStarted(state.quizStarted);
+        setQuizCompleted(state.quizCompleted);
+        setShowResults(state.showResults);
+        setAnswers(state.answers || {});
+        setComments(state.comments || {});
+        
+        if (state.startTime) {
+          setStartTime(new Date(state.startTime));
+        }
+        
+        toast({
+          title: "Quiz Resumed",
+          description: "Your quiz progress has been restored.",
+        });
+      } catch (error) {
+        console.error('Error loading quiz state:', error);
+      }
+    }
+  }, [quiz, studentId, toast]);
+
+  // Auto-save state whenever it changes
+  useEffect(() => {
+    if (quiz && quizStarted) {
+      saveQuizState();
+    }
+  }, [quiz, timeLeft, quizStarted, quizCompleted, showResults, answers, comments, saveQuizState]);
+
+  // Handle page visibility changes and screen wake
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && quiz && quizStarted && !quizCompleted) {
+        console.log('Page visible again, checking quiz state...');
+        
+        // Verify we still have our state
+        const stateKey = getQuizStateKey(studentId, quiz.id);
+        const savedState = localStorage.getItem(stateKey);
+        
+        if (!savedState) {
+          console.log('State lost, saving current state...');
+          saveQuizState();
+        } else {
+          console.log('State preserved during sleep');
+        }
+        
+        toast({
+          title: "Welcome Back",
+          description: "Your quiz is still active. Continue where you left off!",
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [quiz, quizStarted, quizCompleted, studentId, saveQuizState, toast]);
 
   useEffect(() => {
     loadQuiz();
   }, [studentId]);
+
+  useEffect(() => {
+    if (quiz) {
+      loadQuizState();
+    }
+  }, [quiz, loadQuizState]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -78,13 +203,17 @@ const StudentQuiz: React.FC<StudentQuizProps> = ({ studentId, onLogout }) => {
     
     if (assignedQuiz) {
       setQuiz(assignedQuiz);
-      setTimeLeft(assignedQuiz.timer * 60);
+      if (!quizStarted) {
+        setTimeLeft(assignedQuiz.timer * 60);
+      }
     }
   };
 
   const startQuiz = () => {
+    const now = new Date();
     setQuizStarted(true);
-    setStartTime(new Date());
+    setStartTime(now);
+    
     toast({
       title: "Quiz Started!",
       description: `You have ${quiz?.timer} minutes to complete this quiz.`,
@@ -119,6 +248,10 @@ const StudentQuiz: React.FC<StudentQuizProps> = ({ studentId, onLogout }) => {
       studentQuizzes[studentId].status = 'completed';
       localStorage.setItem('studentQuizzes', JSON.stringify(studentQuizzes));
     }
+
+    // Clear the quiz state since it's completed
+    const stateKey = getQuizStateKey(studentId, quiz.id);
+    localStorage.removeItem(stateKey);
 
     setResults(gradedResults);
     setQuizCompleted(true);
@@ -201,7 +334,7 @@ const StudentQuiz: React.FC<StudentQuizProps> = ({ studentId, onLogout }) => {
     return '🔄 REQUIRES SIGNIFICANT ATTENTION. Please review and practice more.';
   };
 
-  const sendResultsToStudent = () => {
+  const sendResultsToStudent = async () => {
     if (!studentEmail.trim() || !results) {
       toast({
         title: "Email Required",
@@ -211,55 +344,125 @@ const StudentQuiz: React.FC<StudentQuizProps> = ({ studentId, onLogout }) => {
       return;
     }
 
-    const percentage = results.totalQuestions ? Math.round((results.score! / results.totalQuestions) * 100) : 0;
-    const verdict = getPerformanceVerdict(percentage);
-    
-    const emailSubject = `Your Quiz Results - ${results.subject}`;
-    const emailBody = `
-Dear Student,
+    setIsEmailSending(true);
 
-Here are your quiz results:
+    try {
+      const percentage = results.totalQuestions ? Math.round((results.score! / results.totalQuestions) * 100) : 0;
+      const verdict = getPerformanceVerdict(percentage);
+      
+      // Format detailed results for email
+      const detailedResults = Object.entries(results.answers).map(([questionId, answer]) => {
+        const correctAnswer = quiz?.correctAnswers?.[questionId];
+        const explanation = quiz?.explanations?.[questionId];
+        const explanationImages = quiz?.explanationImages?.[questionId] || [];
+        const isCorrect = results.gradingDetails?.[questionId];
+        const questionNum = extractQuestionNumber(questionId);
+        
+        return `
+Question ${questionNum}: ${isCorrect ? '✅ CORRECT' : '❌ INCORRECT'}
+Your Answer: ${answer || 'No answer provided'}
+Correct Answer: ${correctAnswer || 'Not specified'}
+${results.comments[questionId] ? `Your Working: ${results.comments[questionId]}` : ''}
+${explanation ? `Teacher's Explanation: ${explanation}` : ''}
+${explanationImages.length > 0 ? `📸 Visual Explanations: ${explanationImages.length} diagram(s) available online` : ''}
+        `.trim();
+      }).join('\n\n' + '─'.repeat(50) + '\n\n');
 
-QUIZ DETAILS:
-============
-Student ID: ${results.studentId}
-Subject: ${results.subject}
-Date: ${new Date(results.completedAt).toLocaleDateString()}
-Time Taken: ${results.timeTaken} minutes
+      // Get student name from database if available
+      const studentData = JSON.parse(localStorage.getItem('studentData') || '{}');
+      const studentName = studentData[results.studentId]?.name || results.studentId;
 
-FINAL SCORE: ${results.score}/${results.totalQuestions} (${percentage}%)
-VERDICT: ${verdict}
+      // Prepare email template data
+      const templateParams = {
+        to_email: studentEmail,
+        to_name: studentName,
+        student_id: results.studentId,
+        student_name: studentName,
+        subject: results.subject,
+        score: `${results.score}/${results.totalQuestions}`,
+        percentage: `${percentage}%`,
+        verdict: verdict,
+        time_taken: `${results.timeTaken} minutes`,
+        date_completed: new Date(results.completedAt).toLocaleDateString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        }),
+        detailed_results: detailedResults,
+        teacher_name: 'Teacher Deb',
+        teacher_email: 'debashrestha222@gmail.com',
+        teacher_phone: '+91 9173126589',
+        has_visual_explanations: Object.values(quiz?.explanationImages || {}).some((images: any) => images.length > 0),
+        quiz_portal_link: window.location.origin + '/student-login',
+        learning_recommendations: getLearningRecommendations(percentage)
+      };
 
-DETAILED ANSWERS:
-================
-${Object.entries(results.answers).map(([questionId, answer]) => {
-  const correctAnswer = quiz?.correctAnswers?.[questionId];
-  const isCorrect = results.gradingDetails?.[questionId];
-  const questionNum = extractQuestionNumber(questionId);
-  
-  return `
-Question ${questionNum}:
-Your Answer: ${answer}
-Correct Answer: ${correctAnswer}
-Result: ${isCorrect ? '✓ CORRECT' : '✗ INCORRECT'}
-${results.comments[questionId] ? `Your Comments: ${results.comments[questionId]}` : ''}
-`;
-}).join('\n')}
+      // Send email via EmailJS
+      const response = await emailjs.send(
+        EMAILJS_CONFIG.serviceId,
+        EMAILJS_CONFIG.templateId,
+        templateParams
+      );
 
-Keep up the good work and continue learning!
+      if (response.status === 200) {
+        toast({
+          title: "📧 Email Sent Successfully!",
+          description: `Results automatically sent to ${studentEmail} from Teacher Deb's account.`,
+        });
 
-Best regards,
-Teacher
-Email: debashrestha222@gmail.com
-    `.trim();
+        // Save email sending record
+        const sentEmails = JSON.parse(localStorage.getItem('sentEmails') || '[]');
+        sentEmails.push({
+          studentId: results.studentId,
+          studentName: studentName,
+          studentEmail: studentEmail,
+          subject: results.subject,
+          score: `${results.score}/${results.totalQuestions}`,
+          percentage: percentage,
+          sentAt: new Date().toISOString(),
+          hasVisualExplanations: Object.values(quiz?.explanationImages || {}).some((images: any) => images.length > 0),
+          method: 'EmailJS'
+        });
+        localStorage.setItem('sentEmails', JSON.stringify(sentEmails));
 
-    const mailtoLink = `mailto:${studentEmail}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-    window.open(mailtoLink);
+      } else {
+        throw new Error('Failed to send email');
+      }
 
-    toast({
-      title: "Email Sent!",
-      description: "Your results have been emailed to you.",
-    });
+    } catch (error) {
+      console.error('Email sending error:', error);
+      toast({
+        title: "❌ Email Failed",
+        description: "Failed to send email automatically. Please check your internet connection or try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsEmailSending(false);
+    }
+  };
+
+  // Generate learning recommendations based on performance
+  const getLearningRecommendations = (percentage: number): string => {
+    if (percentage >= 90) {
+      return `🎉 Outstanding performance! You have demonstrated excellent mastery of the subject.
+📖 Continue practicing similar problems to maintain your high standard.
+🎯 Consider helping classmates who might be struggling with these concepts.`;
+    } else if (percentage >= 70) {
+      return `👏 Good work! You have a solid understanding of most concepts.
+📝 Review the questions you got wrong and practice similar problems.
+💪 Focus on understanding the explanations provided for incorrect answers.`;
+    } else if (percentage >= 50) {
+      return `📚 You're on the right track, but there's room for improvement.
+🔍 Carefully review all explanations, especially for incorrect answers.
+👥 Consider forming a study group or seeking additional help.
+📅 Schedule regular practice sessions to strengthen weak areas.`;
+    } else {
+      return `🎯 This quiz highlights areas that need focused attention.
+📖 I recommend reviewing the fundamental concepts covered in this quiz.
+🤝 Please schedule a meeting with me to discuss your learning needs.
+💡 Don't be discouraged - every expert was once a beginner!`;
+    }
   };
 
   const formatTime = (seconds: number) => {
@@ -458,39 +661,117 @@ Email: debashrestha222@gmail.com
           {/* Detailed Results */}
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>Detailed Answer Review</CardTitle>
+              <CardTitle>Detailed Answer Review & Explanations</CardTitle>
+              <CardDescription>
+                Review your answers with detailed explanations from your teacher
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               {Object.entries(results.answers).map(([questionId, answer]) => {
                 const correctAnswer = quiz.correctAnswers?.[questionId];
+                const explanation = quiz.explanations?.[questionId];
+                const explanationImages = quiz.explanationImages?.[questionId] || [];
                 const isCorrect = results.gradingDetails?.[questionId];
                 const questionNum = extractQuestionNumber(questionId);
                 
                 return (
-                  <div key={questionId} className={`p-4 rounded-lg border-l-4 ${isCorrect ? 'border-l-green-500 bg-green-50' : 'border-l-red-500 bg-red-50'}`}>
-                    <div className="flex items-center gap-2 mb-2">
+                  <div key={questionId} className={`p-6 rounded-lg border-l-4 ${isCorrect ? 'border-l-green-500 bg-green-50' : 'border-l-red-500 bg-red-50'}`}>
+                    {/* Question Header */}
+                    <div className="flex items-center gap-2 mb-4">
                       {isCorrect ? (
-                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        <CheckCircle className="h-6 w-6 text-green-600" />
                       ) : (
-                        <XCircle className="h-5 w-5 text-red-600" />
+                        <XCircle className="h-6 w-6 text-red-600" />
                       )}
-                      <span className="font-semibold">Question {questionNum}</span>
-                      <span className={`text-sm font-medium ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
-                        {isCorrect ? 'CORRECT' : 'INCORRECT'}
+                      <span className="text-xl font-semibold">Question {questionNum}</span>
+                      <span className={`px-3 py-1 text-sm font-medium rounded-full ${isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {isCorrect ? '✓ CORRECT' : '✗ INCORRECT'}
                       </span>
                     </div>
-                    <p className="text-sm mb-2">
-                      <strong>Your Answer:</strong> <span className={isCorrect ? 'text-green-700' : 'text-red-700'}>{answer}</span>
-                    </p>
-                    {correctAnswer && (
-                      <p className="text-sm mb-2">
-                        <strong>Correct Answer:</strong> <span className="text-green-700">{correctAnswer}</span>
-                      </p>
-                    )}
+                    
+                    {/* Answers Section */}
+                    <div className="grid md:grid-cols-2 gap-4 mb-4">
+                      <div className="bg-white p-4 rounded-lg border">
+                        <h4 className="font-semibold text-gray-700 mb-2">Your Answer:</h4>
+                        <p className={`text-lg ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
+                          {answer || <span className="text-gray-400 italic">No answer provided</span>}
+                        </p>
+                      </div>
+                      
+                      {correctAnswer && (
+                        <div className="bg-white p-4 rounded-lg border border-green-200">
+                          <h4 className="font-semibold text-green-700 mb-2">Correct Answer:</h4>
+                          <p className="text-lg text-green-800 font-medium">{correctAnswer}</p>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Student Comments */}
                     {results.comments[questionId] && (
-                      <p className="text-sm text-gray-600">
-                        <strong>Your Comments:</strong> {results.comments[questionId]}
-                      </p>
+                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
+                        <h4 className="font-semibold text-blue-700 mb-2">Your Working/Comments:</h4>
+                        <p className="text-blue-800 whitespace-pre-wrap">{results.comments[questionId]}</p>
+                      </div>
+                    )}
+                    
+                    {/* Teacher's Explanation */}
+                    {(explanation || explanationImages.length > 0) && (
+                      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-5 rounded-lg border border-purple-200">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                            <span className="text-purple-600 font-bold text-sm">?</span>
+                          </div>
+                          <h4 className="font-semibold text-purple-800">Teacher's Explanation</h4>
+                        </div>
+                        
+                        {explanation && (
+                          <div className="text-purple-900 leading-relaxed whitespace-pre-wrap mb-4">
+                            {explanation}
+                          </div>
+                        )}
+                        
+                        {/* Display explanation images */}
+                        {explanationImages.length > 0 && (
+                          <div className="space-y-3">
+                            <h5 className="font-medium text-purple-800 flex items-center gap-2">
+                              <ImageIcon className="h-4 w-4" />
+                              Visual Explanation:
+                            </h5>
+                            <div className="grid md:grid-cols-2 gap-3">
+                              {explanationImages.map((image, index) => (
+                                <div key={index} className="bg-white p-2 rounded-lg border border-purple-200">
+                                  <img
+                                    src={image}
+                                    alt={`Explanation diagram ${index + 1}`}
+                                    className="w-full h-auto rounded border object-contain max-h-64"
+                                    onClick={() => {
+                                      // Open image in new tab for full view
+                                      const newWindow = window.open();
+                                      if (newWindow) {
+                                        newWindow.document.write(`<img src="${image}" style="width: 100%; height: auto;" alt="Explanation diagram ${index + 1}">`);
+                                      }
+                                    }}
+                                    style={{ cursor: 'pointer' }}
+                                    title="Click to view full size"
+                                  />
+                                  <p className="text-xs text-purple-600 mt-1 text-center">
+                                    Click to view full size
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* No explanation provided notice */}
+                    {!explanation && explanationImages.length === 0 && (
+                      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <p className="text-gray-600 italic text-center">
+                          No detailed explanation provided for this question
+                        </p>
+                      </div>
                     )}
                   </div>
                 );
@@ -503,8 +784,11 @@ Email: debashrestha222@gmail.com
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Mail className="h-5 w-5" />
-                Get Results via Email
+                📧 Get Results via Email
               </CardTitle>
+              <CardDescription>
+                Receive your detailed results with explanations from Teacher Deb
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -517,10 +801,44 @@ Email: debashrestha222@gmail.com
                   onChange={(e) => setStudentEmail(e.target.value)}
                 />
               </div>
-              <Button onClick={sendResultsToStudent} className="w-full">
-                <Mail className="h-4 w-4 mr-2" />
-                Email My Results
-              </Button>
+              
+              <div className="grid grid-cols-1 gap-3">
+                <Button 
+                  onClick={sendResultsToStudent} 
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  disabled={isEmailSending}
+                >
+                  {isEmailSending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Sending Email...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4 mr-2" />
+                      🚀 Send Results Automatically
+                    </>
+                  )}
+                </Button>
+              </div>
+              
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <div className="flex items-start gap-3">
+                  <Mail className="h-5 w-5 text-green-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-green-800 mb-2">🎯 Automatic Email Features:</h4>
+                    <ul className="text-sm text-green-700 space-y-1">
+                      <li>✅ <strong>Sent directly from Teacher Deb's Gmail</strong></li>
+                      <li>✅ Professional HTML formatting with D.S Tutoring branding</li>
+                      <li>✅ Detailed question-by-question analysis</li>
+                      <li>✅ Personalized learning recommendations</li>
+                      <li>✅ Teacher contact information included</li>
+                      <li>📸 Visual explanations accessible via portal link</li>
+                      <li>🔒 Secure delivery via EmailJS service</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -565,6 +883,11 @@ Email: debashrestha222@gmail.com
             <div>
               <h1 className="text-3xl font-bold text-gray-900">{quiz.subject} Quiz</h1>
               <p className="text-gray-600">Student ID: {studentId}</p>
+              {quizStarted && (
+                <p className="text-sm text-blue-600 mt-1">
+                  ✓ Your progress is automatically saved
+                </p>
+              )}
             </div>
             <Button onClick={onLogout} variant="outline" size="sm">
               Logout
@@ -595,6 +918,11 @@ Email: debashrestha222@gmail.com
             <CardTitle className="text-xl">Quiz Instructions</CardTitle>
             <CardDescription>
               Please read all questions carefully before answering. You have {quiz.timer} minutes to complete this quiz.
+              {quizStarted && (
+                <span className="block mt-2 text-green-600 font-medium">
+                  ✓ Your answers are being saved automatically. You can safely close and reopen this page.
+                </span>
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -603,7 +931,7 @@ Email: debashrestha222@gmail.com
                 <Clock className="h-16 w-16 text-blue-500 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold mb-2">Ready to Start?</h3>
                 <p className="text-gray-600 mb-6">
-                  Once you click "Start Quiz", the timer will begin. Make sure you're ready!
+                  Once you click "Start Quiz", the timer will begin. Your progress will be automatically saved.
                 </p>
                 <Button onClick={startQuiz} size="lg" className="bg-blue-600 hover:bg-blue-700">
                   Start Quiz
