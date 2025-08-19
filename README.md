@@ -1,238 +1,703 @@
+# 🎓 D.S Tutoring Center - Quiz Management System
 
-# D.S Tutoring Center - Quiz Management System
+<div align="center">
 
-A comprehensive web-based quiz management platform built with React, TypeScript, and modern web technologies. This advanced educational system enables teachers to create, manage, and grade quizzes while providing students with an intuitive, interactive quiz-taking experience.
+![D.S Tutoring Center Logo](https://img.shields.io/badge/D.S%20Tutoring-Educational%20Excellence-blue?style=for-the-badge&logo=graduationcap)
 
-## 🎯 About D.S Tutoring Center
+**Empowering Education Through Innovative Technology**
 
-**Founder & Lead Educator:** Debashrestha Nandi  
-**Contact:** +91 9173126589 | debashrestha222@gmail.com  
-**Specialization:** Online Assessment & Education Technology  
+[![React](https://img.shields.io/badge/React-18.x-61DAFB?style=flat&logo=react)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat&logo=typescript)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-5.x-646CFF?style=flat&logo=vite)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-3.x-06B6D4?style=flat&logo=tailwindcss)](https://tailwindcss.com/)
+[![EmailJS](https://img.shields.io/badge/EmailJS-Automatic%20Emails-FF6B6B?style=flat&logo=mail.ru)](https://www.emailjs.com/)
 
-D.S Tutoring Center is dedicated to transforming education through innovative technology, providing cutting-edge tools for effective online assessment and learning.
+*A comprehensive web-based quiz management platform built with modern technologies for seamless educational assessment.*
 
-## 🚀 Key Features
+[🚀 Live Demo](#) | [📖 Documentation](#features) | [🛠️ Installation](#installation) | [👨‍🏫 For Educators](#for-teachers) | [👨‍🎓 For Students](#for-students)
 
-### 🎓 For Teachers
-- **Smart Quiz Creation**: Rich text formatting, markdown support, and multiple question types
-- **Advanced Student Management**: Assign quizzes to specific students using unique student IDs
-- **AI-Powered Grading**: Intelligent automatic grading with flexible answer matching
-- **Comprehensive Quiz History**: Track all questions and answers across multiple sessions
-- **Detailed Analytics**: Performance insights with charts and improvement trends
-- **Email Integration**: Automatic delivery of quiz results with personalized feedback
-- **Secure Environment**: Anti-cheating measures and encrypted data protection
-- **PDF Upload Support**: Upload quiz materials and supporting documents
-- **Real-time Monitoring**: Track student progress in real-time during quiz sessions
+</div>
 
-### 📚 For Students
-- **Interactive Quiz Interface**: Clean, responsive design with smooth animations
-- **Timed Assessments**: Built-in timer with automatic submission
-- **Instant Feedback**: Immediate results with detailed explanations
-- **Progress Tracking**: Monitor your improvement over time
-- **Email Results**: Receive detailed performance reports
-- **Adaptive Learning**: Personalized study recommendations based on performance
-- **Mobile Responsive**: Take quizzes on any device, anywhere
+---
 
-## 🎨 Enhanced User Experience
+## 📋 Table of Contents
 
-### Visual Features
-- **Animated Landing Page**: Smooth scroll animations and interactive elements
-- **Dynamic Background**: Color-changing gradient backgrounds that respond to user interaction
-- **Floating Elements**: Subtle animated elements for visual appeal
-- **Card Animations**: Smooth hover effects and entrance animations
-- **Responsive Design**: Optimized for all screen sizes and devices
+- [✨ Features](#-features)
+- [🚀 Quick Start](#-quick-start)
+- [🛠️ Installation](#-installation)
+- [⚙️ Configuration](#️-configuration)
+- [👨‍🏫 For Teachers](#-for-teachers)
+- [👨‍🎓 For Students](#-for-students)
+- [🔧 Tech Stack](#-tech-stack)
+- [📊 System Requirements](#-system-requirements)
+- [🔒 Security](#-security)
+- [📧 Email Integration](#-email-integration)
+- [📱 Mobile Support](#-mobile-support)
+- [🤝 Contributing](#-contributing)
+- [📞 Support](#-support)
+- [📜 License](#-license)
 
-### Performance Metrics
-- **500+ Quizzes Created**
-- **10,000+ Students Assessed**
-- **98% Success Rate**
-- **24/7 Support Available**
+---
 
-## 🛠️ Technology Stack
+## ✨ Features
 
-- **Frontend**: React 18, TypeScript, Vite
-- **Styling**: Tailwind CSS, shadcn/ui components
-- **Icons**: Lucide React
-- **State Management**: React Context API, localStorage
-- **Routing**: React Router DOM
-- **Charts & Analytics**: Recharts for data visualization
-- **Forms**: React Hook Form with Zod validation
-- **UI Components**: Radix UI primitives
-- **Animations**: Custom CSS animations and Tailwind transitions
+### 🎯 **Core Functionality**
+- **Smart Quiz Creation** with rich text formatting and markdown support
+- **Advanced Student Management** with unique ID-based authentication
+- **AI-Powered Grading** with intelligent answer matching and flexible scoring
+- **Comprehensive Quiz History** tracking across multiple sessions
+- **Real-time Progress Monitoring** during quiz sessions
+- **Automatic Email Results** with professional HTML formatting
 
-## 📦 Quick Start
+### 🏫 **For Teachers**
+- 📝 **Rich Quiz Editor** with live preview and formatting tools
+- 📊 **Student Analytics** with performance insights and charts
+- 📧 **Automated Email System** sending results directly from teacher's Gmail
+- 🖼️ **Visual Explanations** with image upload and Ctrl+V paste support
+- 📈 **Progress Tracking** and improvement trend analysis
+- 🔒 **Secure Environment** with anti-cheating measures
 
-1. **Clone the repository**
+### 👨‍🎓 **For Students**
+- 🎮 **Interactive Quiz Interface** with clean, responsive design
+- ⏱️ **Timed Assessments** with automatic submission
+- 💾 **Auto-save Progress** - resume quizzes after screen sleep/wake
+- 📱 **Mobile Responsive** - take quizzes on any device
+- 📊 **Instant Feedback** with detailed explanations
+- 📧 **Email Results** with personalized feedback and learning recommendations
+
+### 🎨 **User Experience**
+- 🌈 **Animated Landing Page** with smooth scroll effects and interactive elements
+- 🎭 **Dynamic Backgrounds** that respond to user interaction
+- ✨ **Card Animations** with hover effects and entrance animations
+- 🌙 **Accessibility Features** with WCAG compliant design patterns
+- 📱 **Touch-Friendly** interface optimized for mobile devices
+
+---
+
+## 🚀 Quick Start
+
+Get up and running in less than 5 minutes!
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/yourusername/ds-tutoring-quiz-system.git
+cd ds-tutoring-quiz-system
+
+# 2. Install dependencies
+npm install
+
+# 3. Set up environment variables
+cp .env.example .env.local
+# Edit .env.local with your credentials
+
+# 4. Start development server
+npm run dev
+
+# 5. Open in browser
+# Navigate to http://localhost:5173
+```
+
+**🎉 That's it! Your quiz system is ready!**
+
+---
+
+## 🛠️ Installation
+
+### Prerequisites
+
+- **Node.js** 18.x or higher
+- **npm** 9.x or higher
+- **Modern web browser** (Chrome, Firefox, Safari, Edge)
+
+### Step-by-Step Setup
+
+1. **Clone the Repository**
    ```bash
-   git clone <your-repository-url>
+   git clone https://github.com/yourusername/ds-tutoring-quiz-system.git
    cd ds-tutoring-quiz-system
    ```
 
-2. **Install dependencies**
+2. **Install Dependencies**
    ```bash
    npm install
    ```
 
-3. **Start the development server**
+3. **Environment Configuration**
+   ```bash
+   cp .env.example .env.local
+   ```
+
+4. **Configure EmailJS** (for automatic emails)
+   - Sign up at [EmailJS.com](https://www.emailjs.com/)
+   - Create a Gmail service connection
+   - Design your email template
+   - Add credentials to `.env.local`
+
+5. **Start Development Server**
    ```bash
    npm run dev
    ```
 
-4. **Open your browser**
-   Navigate to `http://localhost:5173`
-
-## 🎯 Getting Started
-
-### Teacher Access
-1. Navigate to `/teacher-login`
-2. Enter the admin password
-3. Access the comprehensive Admin Dashboard at `/admin`
-
-### Student Access
-1. Go to `/student-login`
-2. Enter your unique student ID
-3. Start taking quizzes immediately
-
-## 📊 Grading System & Performance Verdicts
-
-Our intelligent grading system provides detailed feedback:
-
-- **🏆 90%+**: Outstanding Performance! Exceptional work!
-- **🌟 80-89%**: Excellent Work! Great job!
-- **👍 70-79%**: Good Performance! Well done!
-- **📚 60-69%**: Satisfactory. Room for improvement.
-- **💪 50-59%**: Needs Improvement. Keep practicing!
-- **🔄 Below 50%**: Requires Significant Attention. Please review and practice more.
-
-## 🗂️ Project Structure
-
-```
-src/
-├── components/
-│   ├── ui/                 # Reusable UI components (shadcn/ui)
-│   ├── QuizEditor.tsx      # Rich text quiz creation interface
-│   ├── QuizPreview.tsx     # Real-time quiz preview with answer boxes
-│   ├── QuizResults.tsx     # Comprehensive results display and grading
-│   ├── QuizHistory.tsx     # Teacher quiz history tracking
-│   ├── StudentAnalytics.tsx # Performance analytics and charts
-│   └── PDFUpload.tsx       # Document upload functionality
-├── pages/
-│   ├── Index.tsx           # Enhanced animated landing page
-│   ├── TeacherLogin.tsx    # Teacher authentication
-│   ├── StudentLogin.tsx    # Student authentication
-│   ├── AdminDashboard.tsx  # Main teacher dashboard
-│   ├── StudentQuiz.tsx     # Student quiz-taking interface
-│   └── NotFound.tsx        # 404 error page
-├── contexts/
-│   └── AuthContext.tsx     # Authentication state management
-├── hooks/
-│   └── use-toast.ts        # Toast notification hook
-├── lib/
-│   └── utils.ts            # Utility functions
-└── utils/
-    └── security.ts         # Security and validation utilities
-```
-
-## 🎨 Animation & Design Features
-
-### Custom Animations
-- **Smooth Scroll Effects**: Parallax scrolling with dynamic backgrounds
-- **Card Hover Effects**: 3D transforms and shadow animations
-- **Gradient Text**: Animated color-shifting text effects
-- **Floating Elements**: Subtle background animations
-- **Entrance Animations**: Staggered fade-in and scale effects
-
-### Responsive Design
-- **Mobile-First Approach**: Optimized for all devices
-- **Touch-Friendly**: Enhanced mobile interactions
-- **Accessibility**: WCAG compliant design patterns
-
-## 🔧 Configuration
-
-### Environment Variables
-```env
-VITE_APP_TITLE=D.S Tutoring Center - Quiz Management System
-VITE_CONTACT_EMAIL=debashrestha222@gmail.com
-VITE_CONTACT_PHONE=+91 9173126589
-```
-
-### Local Storage Data
-- `quizResults`: Student quiz submissions and scores
-- `studentQuizzes`: Quiz questions and correct answers
-- `quizHistory`: Historical data for teacher reference
-- `userPreferences`: UI preferences and settings
-
-## 🚀 Deployment
-
-### Build for Production
-```bash
-npm run build
-```
-
-### Deploy to Lovable
-1. Click the "Publish" button in the Lovable interface
-2. Your app will be available at `https://ds-tutoring-center.lovable.app`
-
-### Custom Domain
-Connect your custom domain through Project Settings > Domains in Lovable.
-
-## 📈 Advanced Features
-
-### Analytics Dashboard
-- **Performance Tracking**: Individual and class-wide analytics
-- **Question Analysis**: Identify difficult questions and common mistakes
-- **Time Tracking**: Monitor quiz completion times and patterns
-- **Progress Reports**: Generate detailed progress reports
-
-### Security Features
-- **Secure Authentication**: Role-based access control
-- **Data Encryption**: Secure storage of quiz data and results
-- **Anti-Cheating**: Time limits and session monitoring
-- **Privacy Protection**: GDPR compliant data handling
-
-## 🤝 Contact & Support
-
-**Debashrestha Nandi** - Founder & Lead Educator  
-📞 **Phone**: +91 9173126589  
-📧 **Email**: debashrestha222@gmail.com  
-🕒 **Availability**: Monday - Friday, 9 AM - 6 PM  
-
-### Get Help
-- **Documentation**: Comprehensive guides and tutorials
-- **Technical Support**: Direct access to the development team
-- **Training**: Personalized training sessions available
-- **Custom Solutions**: Tailored features for specific needs
-
-## 🔮 Upcoming Features
-
-- [ ] **Multi-language Support**: Localization for global reach
-- [ ] **Advanced Question Types**: Drag-and-drop, matching, and multimedia questions
-- [ ] **Collaboration Tools**: Real-time collaboration between teachers
-- [ ] **Mobile App**: Native iOS and Android applications
-- [ ] **Integration APIs**: Connect with existing learning management systems
-- [ ] **AI Tutoring**: Personalized AI-powered tutoring recommendations
-- [ ] **Blockchain Certificates**: Secure, verifiable achievement certificates
-
-## 📜 License
-
-This project is proprietary software owned by D.S Tutoring Center. All rights reserved.
-
-## 🌟 Why Choose D.S Tutoring Center?
-
-- **Proven Track Record**: 500+ successful quizzes and 10,000+ students assessed
-- **Expert Leadership**: Led by experienced educator Debashrestha Nandi
-- **Cutting-Edge Technology**: Modern, responsive, and secure platform
-- **Personalized Support**: Direct access to the founder and development team
-- **Continuous Innovation**: Regular updates and feature enhancements
-- **Student-Centered Design**: Built with student success in mind
+6. **Build for Production**
+   ```bash
+   npm run build
+   npm run preview
+   ```
 
 ---
 
-**Empowering Education Through Innovative Technology** 🎓
+## ⚙️ Configuration
 
-Built with ❤️ by D.S Tutoring Center | 
+### Environment Variables
 
+Create a `.env.local` file in the project root:
 
+```env
+# App Configuration
+VITE_APP_TITLE=D.S Tutoring Center - Quiz Management System
+VITE_CONTACT_EMAIL=your-email@gmail.com
+VITE_CONTACT_PHONE=+1234567890
 
+# EmailJS Configuration (Required for automatic emails)
+VITE_EMAILJS_SERVICE_ID=your_service_id
+VITE_EMAILJS_TEMPLATE_ID=your_template_id
+VITE_EMAILJS_PUBLIC_KEY=your_public_key
 
+# Optional: Analytics
+VITE_GOOGLE_ANALYTICS_ID=GA-XXXXXXXXX
+```
 
+### Email Template Setup
+
+1. **Create EmailJS Account** using your teaching email
+2. **Connect Gmail Service** for sending emails
+3. **Design Email Template** with the provided HTML template
+4. **Test Email Delivery** before going live
+
+---
+
+## 👨‍🏫 For Teachers
+
+### Getting Started
+
+1. **Access Teacher Portal**
+   ```
+   Navigate to: /teacher-login
+   Default Password: Set during installation
+   ```
+
+2. **Create Your First Quiz**
+   - Use the rich text editor with formatting tools
+   - Add mathematical expressions and special characters
+   - Set timer and difficulty level
+   - Assign to specific students
+
+3. **Add Detailed Explanations**
+   - Write step-by-step solutions
+   - Upload diagrams and visual aids
+   - Paste screenshots with Ctrl+V
+   - Provide learning recommendations
+
+### Key Features for Educators
+
+#### 📝 Quiz Creation
+- **Rich Text Editor** with formatting toolbar
+- **Live Preview** to see exactly how students will see it
+- **Template System** for quick quiz setup
+- **Import/Export** functionality for quiz sharing
+
+#### 📊 Student Management
+- **Individual Student Tracking** with unique IDs
+- **Performance Analytics** with charts and trends
+- **Bulk Operations** for managing multiple students
+- **Progress Reports** generation
+
+#### 📧 Communication
+- **Automatic Email Results** sent from your Gmail
+- **Professional Templates** with school branding
+- **Personalized Feedback** based on performance
+- **Parent Communication** tools
+
+### Admin Dashboard Features
+
+| Feature | Description | Status |
+|---------|-------------|---------|
+| Quiz Creation | Rich text editor with live preview | ✅ Available |
+| Student Analytics | Performance charts and insights | ✅ Available |
+| Email Integration | Automatic result delivery | ✅ Available |
+| Visual Explanations | Image upload and paste support | ✅ Available |
+| Bulk Operations | Manage multiple quizzes at once | 🚧 Coming Soon |
+| Advanced Reports | PDF exports and detailed analytics | 🚧 Coming Soon |
+
+---
+
+## 👨‍🎓 For Students
+
+### How to Take a Quiz
+
+1. **Login with Your Credentials**
+   ```
+   Student ID: Provided by your teacher (e.g., ST001)
+   Password: Provided by your teacher
+   ```
+
+2. **Start Your Quiz**
+   - Read instructions carefully
+   - Click "Start Quiz" when ready
+   - Timer begins automatically
+
+3. **Answer Questions**
+   - Type answers in the provided boxes
+   - Add comments or show your working
+   - Progress is saved automatically
+
+4. **Submit and View Results**
+   - Click "Submit Quiz" when complete
+   - View detailed results immediately
+   - Receive explanations for each question
+
+### Student Features
+
+#### 🎯 Quiz Taking Experience
+- **Clean Interface** focused on content
+- **Auto-save Progress** - never lose your work
+- **Mobile Friendly** - take quizzes on any device
+- **Timer Management** with warnings and automatic submission
+
+#### 📊 Results and Feedback
+- **Instant Grading** with immediate results
+- **Detailed Explanations** from your teacher
+- **Visual Learning Aids** with diagrams and images
+- **Performance Tracking** over time
+
+#### 📱 Accessibility
+- **Screen Reader Support** for visually impaired students
+- **Keyboard Navigation** for motor accessibility
+- **High Contrast Mode** for better visibility
+- **Text Scaling** for reading difficulties
+
+### Test Student Accounts
+
+For demonstration purposes:
+
+| Student ID | Password | Subject | Name |
+|------------|----------|---------|------|
+| ST001 | math123 | Mathematics | Alice Johnson |
+| ST002 | sci456 | Science | Bob Smith |
+| ST003 | eng789 | English | Carol Davis |
+| ST004 | hist321 | History | David Wilson |
+| ST005 | chem654 | Chemistry | Emma Brown |
+
+---
+
+## 🔧 Tech Stack
+
+### Frontend Technologies
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **React** | 18.x | User interface framework |
+| **TypeScript** | 5.x | Type safety and development experience |
+| **Vite** | 5.x | Build tool and development server |
+| **Tailwind CSS** | 3.x | Utility-first CSS framework |
+| **Lucide React** | Latest | Beautiful icon library |
+
+### UI Components & Libraries
+
+- **shadcn/ui** - High-quality React components
+- **Radix UI** - Accessible component primitives
+- **React Hook Form** - Form handling with validation
+- **Zod** - Schema validation
+- **Recharts** - Data visualization and charts
+
+### External Services
+
+- **EmailJS** - Automated email delivery
+- **Browser APIs** - LocalStorage, Clipboard, Notifications
+
+### Development Tools
+
+- **ESLint** - Code linting and quality
+- **Prettier** - Code formatting
+- **Husky** - Git hooks for quality control
+- **TypeScript** - Static type checking
+
+---
+
+## 📊 System Requirements
+
+### Minimum Requirements
+
+- **Browser**: Chrome 80+, Firefox 75+, Safari 13+, Edge 80+
+- **Internet**: Broadband connection for email features
+- **Storage**: 50MB for offline quiz data
+- **RAM**: 2GB for smooth operation
+
+### Recommended Specifications
+
+- **Browser**: Latest version of any modern browser
+- **Internet**: High-speed broadband (10+ Mbps)
+- **Storage**: 500MB for extensive quiz history
+- **RAM**: 4GB+ for optimal performance
+
+### Platform Support
+
+| Platform | Support Level | Notes |
+|----------|---------------|-------|
+| **Desktop** | ✅ Full Support | Optimal experience |
+| **Tablet** | ✅ Full Support | Touch-optimized interface |
+| **Mobile** | ✅ Full Support | Responsive design |
+| **Offline** | 🟡 Partial | Quiz taking only, no email |
+
+---
+
+## 🔒 Security
+
+### Data Protection
+
+- **Local Storage Encryption** for sensitive quiz data
+- **Session Management** with automatic timeouts
+- **Input Sanitization** preventing XSS attacks
+- **CSRF Protection** for form submissions
+
+### Authentication
+
+- **Role-based Access** (Teacher/Student separation)
+- **Secure Password Handling** with validation
+- **Session Persistence** with security checks
+- **Account Lockout** after failed attempts
+
+### Privacy
+
+- **GDPR Compliance** for EU users
+- **Data Minimization** - only necessary data collected
+- **Transparent Policies** with clear privacy statements
+- **User Control** over personal data
+
+### Best Practices
+
+```typescript
+// Example: Secure data handling
+const sanitizeInput = (input: string): string => {
+  return input.trim().replace(/[<>]/g, '');
+};
+
+const validateStudentId = (id: string): boolean => {
+  return /^ST\d{3}$/.test(id);
+};
+```
+
+---
+
+## 📧 Email Integration
+
+### EmailJS Setup
+
+The system uses EmailJS for professional email delivery directly from the teacher's Gmail account.
+
+#### Configuration Steps
+
+1. **Create EmailJS Account**
+   ```
+   Visit: https://www.emailjs.com/
+   Sign up with your teaching email
+   ```
+
+2. **Setup Gmail Service**
+   ```
+   1. Add new service
+   2. Choose Gmail
+   3. Authenticate with your account
+   4. Note the Service ID
+   ```
+
+3. **Create Email Template**
+   ```
+   1. Design professional template
+   2. Include student results variables
+   3. Add school branding
+   4. Note the Template ID
+   ```
+
+4. **Configure Environment Variables**
+   ```env
+   VITE_EMAILJS_SERVICE_ID=service_xxxxxxx
+   VITE_EMAILJS_TEMPLATE_ID=template_xxxxxxx
+   VITE_EMAILJS_PUBLIC_KEY=xxxxxxxxxxxxxxx
+   ```
+
+### Email Features
+
+- **Automatic Delivery** from teacher's Gmail
+- **Professional Formatting** with school branding
+- **Detailed Results** with question-by-question breakdown
+- **Visual Explanations** with links to online portal
+- **Learning Recommendations** based on performance
+- **Contact Information** for follow-up support
+
+### Sample Email Content
+
+```html
+Subject: 🎓 Quiz Results - Mathematics | Student: ST001
+
+Dear Alice,
+
+Your quiz results are ready! You scored 8/10 (80%) - Excellent Work!
+
+📋 QUIZ PERFORMANCE SUMMARY
+Student ID: ST001
+Subject: Mathematics  
+Date: Monday, January 15, 2024
+Time Taken: 25 minutes
+
+📝 DETAILED QUESTION ANALYSIS
+[Detailed breakdown with explanations]
+
+📚 LEARNING RECOMMENDATIONS  
+[Personalized feedback and suggestions]
+
+Best regards,
+Teacher Deb
+D.S Tutoring Center
+```
+
+---
+
+## 📱 Mobile Support
+
+### Responsive Design
+
+The system is fully optimized for mobile devices with:
+
+- **Touch-friendly Interface** with large tap targets
+- **Swipe Gestures** for navigation
+- **Optimized Typography** for small screens
+- **Fast Loading** with progressive enhancement
+
+### Mobile-Specific Features
+
+- **Offline Quiz Taking** when internet is poor
+- **Touch Keyboard Optimization** for different input types
+- **Portrait/Landscape Support** for flexible usage
+- **Battery Optimization** with efficient rendering
+
+### Cross-Platform Testing
+
+| Device Category | Screen Size | Support Status |
+|----------------|-------------|----------------|
+| **Large Desktop** | 1920px+ | ✅ Optimized |
+| **Desktop** | 1280-1919px | ✅ Optimized |
+| **Laptop** | 1024-1279px | ✅ Optimized |
+| **Tablet** | 768-1023px | ✅ Optimized |
+| **Mobile** | 320-767px | ✅ Optimized |
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions from educators, developers, and students!
+
+### How to Contribute
+
+1. **Fork the Repository**
+   ```bash
+   git fork https://github.com/yourusername/ds-tutoring-quiz-system.git
+   ```
+
+2. **Create Feature Branch**
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+
+3. **Make Your Changes**
+   - Follow the coding standards
+   - Add tests for new features
+   - Update documentation
+
+4. **Commit Changes**
+   ```bash
+   git commit -m "✨ Add amazing feature"
+   ```
+
+5. **Push to Branch**
+   ```bash
+   git push origin feature/amazing-feature
+   ```
+
+6. **Open Pull Request**
+   - Describe your changes
+   - Include screenshots for UI changes
+   - Reference any related issues
+
+### Development Guidelines
+
+- **Code Style**: Follow TypeScript and React best practices
+- **Testing**: Add tests for new functionality
+- **Documentation**: Update README and code comments
+- **Accessibility**: Ensure WCAG compliance
+
+### Areas for Contribution
+
+- 🐛 **Bug Fixes** - Help improve stability
+- ✨ **New Features** - Add educational tools
+- 📚 **Documentation** - Improve guides and tutorials
+- 🌐 **Translations** - Support multiple languages
+- 🎨 **UI/UX** - Enhance user experience
+- 📱 **Mobile** - Improve mobile functionality
+
+---
+
+## 📞 Support
+
+### Getting Help
+
+We're here to help educators and students succeed!
+
+#### 📧 Email Support
+- **General Inquiries**: debashrestha222@gmail.com
+- **Technical Issues**: support@dstutoring.com
+- **Feature Requests**: features@dstutoring.com
+
+#### 📱 Phone Support
+- **Direct Line**: +91 9173126589
+- **Office Hours**: Monday - Friday, 9:00 AM - 6:00 PM IST
+- **Emergency Support**: Available for critical issues
+
+#### 💬 Community Support
+
+- **GitHub Issues**: For bug reports and feature requests
+- **Discussion Forum**: Community-driven help and tips
+- **Video Tutorials**: Step-by-step setup and usage guides
+
+### Frequently Asked Questions
+
+<details>
+<summary><strong>How do I reset a student's password?</strong></summary>
+
+1. Access the Teacher Dashboard
+2. Go to Student Management
+3. Find the student and click "Reset Password"
+4. Provide the new password to the student
+</details>
+
+<details>
+<summary><strong>Can students retake quizzes?</strong></summary>
+
+Currently, students can only take each quiz once. Multiple attempts will be supported in a future update. Contact your teacher if you need to retake a quiz.
+</details>
+
+<details>
+<summary><strong>How do I export quiz results?</strong></summary>
+
+1. Go to Teacher Dashboard → Quiz Results
+2. Select the quizzes you want to export
+3. Click "Export to CSV/PDF"
+4. Choose your preferred format
+</details>
+
+<details>
+<summary><strong>Is the system secure for student data?</strong></summary>
+
+Yes! We implement multiple security measures:
+- Data encryption at rest and in transit
+- Regular security audits
+- GDPR-compliant data handling
+- No third-party data sharing
+</details>
+
+### Troubleshooting
+
+#### Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| **Quiz not loading** | Clear browser cache and refresh |
+| **Email not sending** | Check EmailJS configuration |
+| **Screen goes blank** | Updated Chrome/Firefox browser |
+| **Mobile layout broken** | Check internet connection |
+
+---
+
+## 📜 License
+
+### Educational Use License
+
+This project is licensed for educational use under the MIT License with additional terms:
+
+#### ✅ **Permitted Uses**
+- Educational institutions and tutoring centers
+- Non-commercial educational research
+- Personal learning and development
+- Open source contributions
+
+#### ❌ **Restrictions**
+- Commercial resale without permission
+- Removing attribution or branding
+- Using for harmful or illegal purposes
+
+#### 📋 **Attribution Requirements**
+When using this software, please include:
+```
+Powered by D.S Tutoring Center Quiz Management System
+Created by Teacher Deb - https://github.com/yourusername/ds-tutoring-quiz-system
+```
+
+### Full License Text
+
+```
+MIT License
+
+Copyright (c) 2024 D.S Tutoring Center
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+[Full MIT License text...]
+```
+
+---
+
+## 🌟 Acknowledgments
+
+### Special Thanks
+
+- **Anthropic Claude** - AI assistance in development
+- **React Team** - Amazing frontend framework
+- **Tailwind CSS** - Beautiful utility-first CSS
+- **EmailJS** - Reliable email service
+- **Vite** - Lightning-fast build tool
+
+### Educational Partners
+
+- **Local Schools** - Beta testing and feedback
+- **Teaching Community** - Feature suggestions and guidance
+- **Student Testers** - User experience insights
+
+### Open Source Libraries
+
+This project builds upon many excellent open source libraries. See `package.json` for a complete list of dependencies and their licenses.
+
+---
+
+<div align="center">
+
+## 🚀 Ready to Transform Your Teaching?
+
+**[Get Started Now](#-quick-start)** | **[View Live Demo](#)** | **[Contact Support](#-support)**
+
+---
+
+**Made with ❤️ for Education by Teacher Deb**
+
+*Empowering the next generation through innovative educational technology*
+
+[![GitHub Stars](https://img.shields.io/github/stars/yourusername/ds-tutoring-quiz-system?style=social)](https://github.com/yourusername/ds-tutoring-quiz-system)
+[![Follow on GitHub](https://img.shields.io/github/followers/yourusername?style=social)](https://github.com/yourusername)
+
+**🎓 D.S Tutoring Center - Where Innovation Meets Education**
+
+</div>
