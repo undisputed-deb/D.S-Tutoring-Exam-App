@@ -42,7 +42,7 @@ const STUDENT_DATABASE = {
     name: 'Emma Brown',
     subject: 'Chemistry',
     active: true
-  }
+  },
   'AZMISH1011': {
     password: 'azmish123',
     name: 'Azmi',
