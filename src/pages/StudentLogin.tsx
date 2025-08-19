@@ -43,6 +43,12 @@ const STUDENT_DATABASE = {
     subject: 'Chemistry',
     active: true
   }
+  'AZMISH1011': {
+    password: 'azmish123',
+    name: 'Azmi',
+    subject: 'SHSAT',
+    active: true
+  }
 };
 
 const StudentLogin: React.FC<StudentLoginProps> = ({ onLogin }) => {
